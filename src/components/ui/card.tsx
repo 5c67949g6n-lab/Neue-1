@@ -17,8 +17,12 @@ export function CardHeader({ className, ...props }: ComponentProps<"div">) {
   return <div className={cn("space-y-1 p-5 pb-3 sm:p-6 sm:pb-3", className)} {...props} />;
 }
 
-export function CardTitle({ className, ...props }: ComponentProps<"h2">) {
-  return <h2 className={cn("text-lg font-semibold tracking-tight", className)} {...props} />;
+export function CardTitle({
+  as: Tag = "h2",
+  className,
+  ...props
+}: ComponentProps<"h2"> & { as?: "h1" | "h2" | "h3" }) {
+  return <Tag className={cn("text-lg font-semibold tracking-tight", className)} {...props} />;
 }
 
 export function CardDescription({ className, ...props }: ComponentProps<"p">) {
