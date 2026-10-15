@@ -1,36 +1,72 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Standzeit
 
-## Getting Started
+> Dein Auto verdient Geld, während du im Urlaub bist – und du musst dich um nichts kümmern.
 
-First, run the development server:
+MVP einer Peer-to-Peer-Plattform, auf der Privatleute ihr Auto vermieten, während sie es nicht brauchen
+(z. B. drei Wochen Urlaub). Testprojekt, Start in Stuttgart.
+
+Architektur, Datenmodell und Buchungsablauf: **[docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md)**
+
+## Stand
+
+**Phase 1 – Setup, Datenmodell, Auth, Rollen** ✅
+
+- Komplettes Datenbankschema für alle Phasen (46 Tabellen, RLS überall, Doppelbuchungs-Constraint)
+- Registrierung mit E-Mail-Bestätigung, Login, Passwort zurücksetzen, Konto/Profil
+- Mieter-Verifizierung: Ausweis + Führerschein verschlüsselt hochladen, Prüfung im Admin-Panel
+- Admin-Panel: Verifizierungen, Nutzer sperren/Admin-Rechte, Einstellungen, Audit-Log
+- Buchungs-Statusmaschine (reine Logik, vollständig getestet)
+
+## Lokal starten
+
+Voraussetzungen: Node.js 22, Docker.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run db:start            # lokale Supabase (Postgres, Auth, Storage, Mailpit) in Docker
+cp .env.example .env.local  # Werte aus `npx supabase status` eintragen, Schlüssel: openssl rand -base64 32
+npm run db:reset            # Migrationen einspielen
+npm run seed:users          # Test-Konten anlegen
+npm run dev                 # http://127.0.0.1:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+| Dienst | URL |
+| --- | --- |
+| App | http://127.0.0.1:3000 |
+| Supabase Studio (Datenbank ansehen) | http://127.0.0.1:54323 |
+| Mailpit (alle E-Mails landen hier) | http://127.0.0.1:54324 |
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Test-Konten (nur lokal, Passwort `Standzeit-Test-2026`):
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `admin@standzeit.test` – Admin
+- `mieter@standzeit.test` – Mieter
+- `vermieter@standzeit.test` – Besitzer
 
-## Learn More
+## Tests
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run typecheck   # TypeScript
+npm run lint        # ESLint
+npm test            # Unit-Tests (Statusmaschine, Altersprüfung, Verschlüsselung, …)
+npm run test:db     # Sicherheitstests gegen die lokale Datenbank (RLS, Constraints, Trigger)
+npm run test:e2e    # Ende-zu-Ende im Browser (startet/nutzt den Dev-Server)
+npm run test:all    # alles
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Projektstruktur
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+src/
+  app/              Seiten und Server Actions (App Router)
+  components/ui/    UI-Bausteine
+  domain/           reine Fachlogik (Statusmaschine, Berechtigung, später Preise, Keybox …)
+  lib/              Supabase-Clients, Auth (DAL), Verschlüsselung, Einstellungen, Storage
+  i18n/de/          Texte pro Feature
+  config/brand.ts   Name und Claim
+supabase/
+  migrations/       Datenbankschema (SQL)
+  templates/        deutsche Auth-E-Mails
+tests/db/           Datenbank-Sicherheitstests
+e2e/                Playwright-Tests
+docs/               Architektur
+```
