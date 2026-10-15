@@ -5,11 +5,15 @@
  * ausschließlich auf Jahr/Monat/Tag – nie mit `new Date("YYYY-MM-DD")`, damit keine
  * Zeitzone oder Sommerzeit das Ergebnis um einen Tag verschiebt.
  *
- * Geburtstag am 29.02.: In Nicht-Schaltjahren gilt der 01.03. als Jahrestag. Das folgt der
- * deutschen Fristberechnung (§ 187 Abs. 2, § 188 Abs. 2 und 3 BGB): Das Lebensjahr endet mit
- * Ablauf des 28.02., das neue Alter gilt also ab dem 01.03. Dieselbe Regel gilt für den
- * Jahrestag der Führerschein-Ausstellung und für den 16. Geburtstag.
+ * Am Jahrestag selbst gilt bereits das neue Alter (§ 187 Abs. 2 S. 2 BGB: der Geburtstag
+ * wird mitgezählt). Geburtstag am 29.02.: In Nicht-Schaltjahren gilt der 01.03. als Jahrestag.
+ * Das entspricht der deutschen Fristberechnung (§ 188 Abs. 2 und 3 BGB): Das Lebensjahr endet
+ * mit Ablauf des 28.02., das neue Alter gilt also erst ab dem 01.03. – nicht schon am 28.02.
+ * Dieselbe Regel gilt für den Jahrestag der Führerschein-Ausstellung und den 16. Geburtstag.
  */
+import { eligibilityText } from "./messages";
+
+export { eligibilityText };
 
 export type EligibilityInput = {
   dateOfBirth: string;
@@ -28,22 +32,6 @@ export type EligibilityResult = {
 
 /** Frühestes plausibles Alter bei Ausstellung des Führerscheins. */
 export const MIN_LICENSE_ISSUE_AGE = 16;
-
-export const eligibilityText = {
-  dateOfBirthInvalid: "Das Geburtsdatum ist kein gültiges Datum.",
-  dateOfBirthInFuture: "Das Geburtsdatum liegt in der Zukunft.",
-  licenseIssuedOnInvalid: "Das Ausstellungsdatum des Führerscheins ist kein gültiges Datum.",
-  licenseIssuedOnInFuture: "Das Ausstellungsdatum des Führerscheins liegt in der Zukunft.",
-  licenseBeforeMinIssueAge: `Der Führerschein kann nicht vor dem ${MIN_LICENSE_ISSUE_AGE}. Geburtstag ausgestellt worden sein. Bitte prüfe Geburts- und Ausstellungsdatum.`,
-  tooYoung: (minAge: number, age: number) =>
-    `Das Mindestalter von ${minAge} Jahren ist nicht erreicht (aktuell ${years(age)}).`,
-  licenseTooShort: (minYears: number, licenseYears: number) =>
-    `Der Führerschein muss seit mindestens ${minYears === 1 ? "1 Jahr" : `${minYears} Jahren`} bestehen (aktuell ${years(licenseYears)}).`,
-} as const;
-
-function years(n: number): string {
-  return n === 1 ? "1 Jahr" : `${n} Jahre`;
-}
 
 type CalendarDate = { year: number; month: number; day: number };
 
@@ -177,7 +165,7 @@ export function checkRenterEligibility(input: EligibilityInput): EligibilityResu
     if (birth && birthUsable) {
       const earliestIssue = anniversaryIn(birth, birth.year + MIN_LICENSE_ISSUE_AGE);
       if (compareDates(issued, earliestIssue) < 0) {
-        reasons.push(eligibilityText.licenseBeforeMinIssueAge);
+        reasons.push(eligibilityText.licenseBeforeMinIssueAge(MIN_LICENSE_ISSUE_AGE));
       }
     }
     if (licenseYears < input.minLicenseYears) {

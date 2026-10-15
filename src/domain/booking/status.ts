@@ -17,6 +17,11 @@ export const BOOKING_STATUSES = [
   "completed",
 ] as const satisfies readonly BookingStatus[];
 
+// Compile-Zeit-Prüfung: Kommt im DB-Enum ein Status hinzu, schlägt der Typecheck hier fehl.
+type MissingStatus = Exclude<BookingStatus, (typeof BOOKING_STATUSES)[number]>;
+const allStatusesListed: [MissingStatus] extends [never] ? true : MissingStatus = true;
+void allStatusesListed;
+
 export const STATUS_LABELS: Readonly<Record<BookingStatus, string>> = Object.freeze({
   requested: "Angefragt",
   declined: "Abgelehnt",

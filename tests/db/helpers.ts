@@ -77,13 +77,16 @@ export type Attempt =
   | { ok: true; rowCount: number; rows: Row[] }
   | { ok: false; code: string | undefined; message: string };
 
-/** Führt sql in einem Savepoint aus – ein Fehler bricht die Transaktion nicht ab. */
-export async function attempt(db: Db, sql: string, params: Params = []): Promise<Attempt> {
+/** Führt fn in einem Savepoint aus – ein Fehler bricht die Transaktion nicht ab. */
+export async function attemptFn<T>(
+  db: Db,
+  fn: () => Promise<T>,
+): Promise<{ ok: true; value: T } | { ok: false; code: string | undefined; message: string }> {
   await db.query("savepoint attempt");
   try {
-    const res = await db.query(sql, params);
+    const value = await fn();
     await db.query("release savepoint attempt");
-    return { ok: true, rowCount: res.rowCount ?? 0, rows: res.rows };
+    return { ok: true, value };
   } catch (error) {
     await db.query("rollback to savepoint attempt");
     await db.query("release savepoint attempt");
@@ -92,14 +95,40 @@ export async function attempt(db: Db, sql: string, params: Params = []): Promise
   }
 }
 
+/** Führt sql in einem Savepoint aus – ein Fehler bricht die Transaktion nicht ab. */
+export async function attempt(db: Db, sql: string, params: Params = []): Promise<Attempt> {
+  const result = await attemptFn(db, () => db.query(sql, params));
+  return result.ok
+    ? { ok: true, rowCount: result.value.rowCount ?? 0, rows: result.value.rows }
+    : result;
+}
+
 function describeAttempt(result: Attempt) {
-  return result.ok ? `kein Fehler (${result.rowCount} Zeile(n))` : `${result.code}: ${result.message}`;
+  return result.ok
+    ? `kein Fehler (${result.rowCount} Zeile(n))`
+    : `${result.code}: ${result.message}`;
 }
 
 /** Erwartet einen Postgres-Fehler mit genau diesem Code (z. B. 42501, 23P01, P0001). */
 export async function expectPgError(db: Db, code: string, sql: string, params: Params = []) {
   const result = await attempt(db, sql, params);
   expect(result.ok ? null : result.code, `${sql.trim()}\n→ ${describeAttempt(result)}`).toBe(code);
+}
+
+/** Wie expectPgError, aber für eine beliebige Abfolge (z. B. einen Fixture-Helfer). */
+export async function expectPgErrorFrom(db: Db, code: string, fn: () => Promise<unknown>) {
+  const result = await attemptFn(db, fn);
+  expect(
+    result.ok ? null : result.code,
+    result.ok ? "kein Fehler" : `${result.code}: ${result.message}`,
+  ).toBe(code);
+}
+
+/** Erwartet, dass fn fehlerfrei durchläuft (Gegenprobe zu expectPgErrorFrom). */
+export async function expectOkFrom<T>(db: Db, fn: () => Promise<T>) {
+  const result = await attemptFn(db, fn);
+  expect(result.ok ? null : `${result.code}: ${result.message}`).toBeNull();
+  return result.ok ? result.value : undefined;
 }
 
 /** Erwartet "permission denied" bzw. "new row violates row-level security policy" (42501). */
@@ -119,6 +148,12 @@ export async function expectRows(db: Db, n: number, sql: string, params: Params 
 
 export async function rows<T extends Row = Row>(db: Db, sql: string, params: Params = []) {
   return (await db.query(sql, params)).rows as T[];
+}
+
+/** Erster Wert der einzigen Ergebniszeile, z. B. für "select public.is_admin()". */
+export async function scalar<T = unknown>(db: Db, sql: string, params: Params = []) {
+  const row = await one(db, sql, params);
+  return Object.values(row)[0] as T;
 }
 
 export async function one<T extends Row = Row>(db: Db, sql: string, params: Params = []) {
@@ -373,4 +408,42 @@ export async function createScenario(
 
 export function randomHash() {
   return randomBytes(32).toString("hex");
+}
+
+/** Keybox am Fahrzeug, verwaltet vom Besitzer, plus Zugangs-Code für den Mieter. */
+export async function createKeyAccessGrant(
+  db: Db,
+  opts: { vehicleId: string; managerId: string; bookingId: string; granteeId: string },
+) {
+  const { id: keyboxId } = await one<{ id: string }>(
+    db,
+    "insert into public.keyboxes (vehicle_id, managed_by, label) values ($1, $2, 'Keybox (Test)') returning id",
+    [opts.vehicleId, opts.managerId],
+  );
+  const { id } = await one<{ id: string }>(
+    db,
+    `insert into public.key_access_grants
+       (keybox_id, booking_id, grantee_user_id, purpose, code_enc, valid_from, valid_until)
+     values ($1, $2, $3, 'renter', 'v1.dGVzdA.dGVzdA.dGVzdA', now(), now() + interval '14 days')
+     returning id`,
+    [keyboxId, opts.bookingId, opts.granteeId],
+  );
+  return { keyboxId, grantId: id };
+}
+
+export async function createServicePartner(db: Db) {
+  const { id } = await one<{ id: string }>(
+    db,
+    "insert into public.service_partners (name, email) values ('Waschpark (Test)', 'partner@standzeit.test') returning id",
+  );
+  return id;
+}
+
+export async function createStripeEvent(db: Db) {
+  const id = `evt_test_${randomUUID()}`;
+  await db.query(
+    "insert into public.stripe_events (id, type, payload) values ($1, 'payment_intent.succeeded', '{}')",
+    [id],
+  );
+  return id;
 }

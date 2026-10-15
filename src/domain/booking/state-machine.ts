@@ -35,6 +35,10 @@ export const BOOKING_EVENTS = [
 
 export type BookingEvent = (typeof BOOKING_EVENTS)[number];
 
+export function isBookingEvent(value: unknown): value is BookingEvent {
+  return typeof value === "string" && (BOOKING_EVENTS as readonly string[]).includes(value);
+}
+
 export type BookingSnapshot = {
   status: BookingStatus;
   expiresAt: Date;
@@ -56,12 +60,7 @@ export type TransitionContext = {
 };
 
 export type TimestampField =
-  | "confirmed_at"
-  | "cancelled_at"
-  | "picked_up_at"
-  | "returned_at"
-  | "ready_at"
-  | "completed_at";
+  "confirmed_at" | "cancelled_at" | "picked_up_at" | "returned_at" | "ready_at" | "completed_at";
 
 export type TransitionErrorCode = "invalid_transition" | "forbidden_actor" | "guard_failed";
 
@@ -100,7 +99,11 @@ export type TransitionRule = {
 export const DEFAULT_PICKUP_EARLY_MINUTES = 30;
 
 function rule(r: TransitionRule): TransitionRule {
-  return Object.freeze({ ...r, actors: Object.freeze([...r.actors]), guards: Object.freeze([...r.guards]) });
+  return Object.freeze({
+    ...r,
+    actors: Object.freeze([...r.actors]),
+    guards: Object.freeze([...r.guards]),
+  });
 }
 
 /**
@@ -254,7 +257,10 @@ function assertValidInput(booking: BookingSnapshot, ctx: TransitionContext) {
 }
 
 /** Regel für Ausgangsstatus + Ereignis (oder `undefined`, wenn nicht definiert). */
-export function findTransition(from: BookingStatus, event: BookingEvent): TransitionRule | undefined {
+export function findTransition(
+  from: BookingStatus,
+  event: BookingEvent,
+): TransitionRule | undefined {
   return TRANSITIONS.find((r) => r.from === from && r.event === event);
 }
 
