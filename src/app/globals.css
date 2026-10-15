@@ -1,26 +1,92 @@
 @import "tailwindcss";
 
+/*
+ * Design-Tokens. Komponenten nutzen nur diese semantischen Farben
+ * (bg-primary, text-muted-foreground, border-border …), nie feste Hex-Werte.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f8faf9;
+  --foreground: #10201c;
+  --card: #ffffff;
+  --card-foreground: #10201c;
+  --muted: #eef3f1;
+  --muted-foreground: #52635e;
+  --border: #d9e3df;
+  --input: #c9d6d1;
+  --ring: #0f766e;
+  --primary: #0f766e;
+  --primary-hover: #115e59;
+  --primary-foreground: #ffffff;
+  --accent: #f59e0b;
+  --accent-foreground: #1f1300;
+  --destructive: #b42318;
+  --destructive-foreground: #ffffff;
+  --success: #067647;
+  --success-bg: #ecfdf3;
+  --warning: #b54708;
+  --warning-bg: #fffaeb;
+  --danger-bg: #fef3f2;
+  --info-bg: #eef6ff;
+  --info: #1d4ed8;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0b1412;
+    --foreground: #e6efec;
+    --card: #111d1a;
+    --card-foreground: #e6efec;
+    --muted: #172521;
+    --muted-foreground: #9db0aa;
+    --border: #23332e;
+    --input: #2e423c;
+    --ring: #2dd4bf;
+    --primary: #14b8a6;
+    --primary-hover: #2dd4bf;
+    --primary-foreground: #04201c;
+    --accent: #fbbf24;
+    --accent-foreground: #1f1300;
+    --destructive: #f97066;
+    --destructive-foreground: #1a0503;
+    --success: #47cd89;
+    --success-bg: #0c2a1c;
+    --warning: #fdb022;
+    --warning-bg: #2a1d05;
+    --danger-bg: #2c0f0c;
+    --info-bg: #0f1b33;
+    --info: #84adff;
+  }
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-bg: var(--success-bg);
+  --color-warning: var(--warning);
+  --color-warning-bg: var(--warning-bg);
+  --color-danger-bg: var(--danger-bg);
+  --color-info: var(--info);
+  --color-info-bg: var(--info-bg);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
 }
