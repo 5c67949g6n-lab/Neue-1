@@ -127,10 +127,8 @@ describe("parseSettings", () => {
     expect(Object.keys(result).sort()).toEqual([...SETTING_KEYS].sort());
   });
 
-  // Bekannter Fehler in schema.ts: `key in settingsSchema.shape` trifft auch geerbte
-  // Object-Schlüssel, parseSettings wirft dann („field.safeParse is not a function“).
-  // Fix (Object.hasOwn statt in) ist beim Schema-Besitzer angefragt – danach `it.fails` → `it`.
-  it.fails("ignoriert auch Schlüssel wie constructor oder __proto__", () => {
+  // Regression: `key in shape` traf früher auch geerbte Object-Schlüssel.
+  it("ignoriert auch Schlüssel wie constructor oder __proto__", () => {
     for (const key of ["constructor", "toString", "__proto__", "hasOwnProperty"]) {
       expect(parseSettings([{ key, value: 1 }])).toEqual(DEFAULTS);
     }

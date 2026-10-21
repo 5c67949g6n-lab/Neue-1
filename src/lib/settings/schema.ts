@@ -43,7 +43,7 @@ export function parseSettings(
 ): PlatformSettings {
   const raw: Record<string, unknown> = {};
   for (const row of rows) {
-    if (!(row.key in settingsSchema.shape)) continue;
+    if (!Object.hasOwn(settingsSchema.shape, row.key)) continue;
     const field = settingsSchema.shape[row.key as SettingKey];
     const parsed = field.safeParse(row.value);
     if (parsed.success) raw[row.key] = parsed.data;
