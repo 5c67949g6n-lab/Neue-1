@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { createTestUser, deleteTestUser, loginViaUi } from "./helpers/supabase-admin";
+import { openMainMenu } from "./helpers/navigation";
 
 test.describe("Login", () => {
   let user: Awaited<ReturnType<typeof createTestUser>>;
@@ -17,6 +18,7 @@ test.describe("Login", () => {
     await expect(page).toHaveURL(/\/login\?next=%2Fkonto/);
     await loginViaUi(page, user.email, user.password, "/konto");
     await expect(page).toHaveURL(/\/konto/);
+    await openMainMenu(page);
     await expect(page.getByRole("link", { name: "Mein Konto" })).toBeVisible();
   });
 

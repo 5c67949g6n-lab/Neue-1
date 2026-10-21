@@ -5,6 +5,7 @@ export const verificationText = {
     heading: "Als Mieter verifizieren",
     description:
       "Bevor du ein Auto mietest, prüfen wir einmalig deinen Ausweis und deinen Führerschein.",
+    back: "Zurück zu Mein Konto",
   },
   why: {
     title: "Warum wir das prüfen",
@@ -35,6 +36,7 @@ export const verificationText = {
     approvedSince: (date: string) => `Bestätigt am ${date}.`,
     approvedValidUntil: (date: string) => `Gültig bis ${date}.`,
     approvedCta: "Autos entdecken",
+    pendingBadge: "In Prüfung",
     pendingTitle: "Deine Angaben werden geprüft",
     pendingSince: (date: string) => `Eingereicht am ${date}.`,
     pendingBody:
@@ -67,6 +69,7 @@ export const verificationText = {
     uploaded: "Hochgeladen",
     missing: "Noch nicht hochgeladen",
     replaceHint: "Ein neues Foto ersetzt das bisherige.",
+    progress: (done: number, total: number) => `${done} von ${total} Fotos hochgeladen`,
     previewAlt: (label: string) => `Vorschau: ${label}`,
   },
   form: {
@@ -105,16 +108,19 @@ export const verificationText = {
     dateTooEarly: "Bitte prüfe das Datum.",
     licenseClassesRequired: "Bitte wähle mindestens eine Führerscheinklasse.",
     licenseClassesInvalid: "Bitte wähle nur Klassen aus der Liste.",
-    licenseClassesNoCar: "Zum Mieten brauchst du die Klasse B (oder eine höhere Klasse wie C1 oder C).",
+    licenseClassesNoCar:
+      "Zum Mieten brauchst du die Klasse B (oder eine höhere Klasse wie C1 oder C).",
     consentRequired: "Bitte bestätige die Einwilligung.",
     missingDocuments: (labels: string[]) => `Es fehlen noch Fotos: ${labels.join(", ")}.`,
     fileMissing: "Bitte wähle ein Foto aus.",
     fileEmpty: "Die Datei ist leer. Bitte wähle ein anderes Foto.",
     fileTooLarge: "Das Foto ist zu groß. Bitte wähle ein kleineres Foto.",
-    fileUnsupported: "Dieses Format können wir nicht lesen. Bitte nutze ein Foto als JPG, PNG oder WebP.",
+    fileUnsupported:
+      "Dieses Format können wir nicht lesen. Bitte nutze ein Foto als JPG, PNG oder WebP.",
     imageUnreadable:
       "Dieses Bild können wir nicht öffnen. Bitte mach ein neues Foto oder nutze ein JPG oder PNG.",
-    alreadySubmitted: "Deine Verifizierung wurde bereits eingereicht – Änderungen sind nicht mehr möglich.",
+    alreadySubmitted:
+      "Deine Verifizierung wurde bereits eingereicht – Änderungen sind nicht mehr möglich.",
     alreadyApproved: "Du bist bereits verifiziert.",
     notDraft: "Diese Verifizierung kann nicht mehr geändert werden. Bitte lade die Seite neu.",
     uploadFailed: "Das Hochladen hat nicht geklappt. Bitte versuch es noch einmal.",

@@ -3,7 +3,12 @@ import { isValidIsoDate } from "@/domain/verification/eligibility";
 import { verificationText } from "@/i18n/de/verification";
 
 /** Die vier Fotos einer Mieter-Verifizierung (Reihenfolge = Reihenfolge im Formular). */
-export const RENTER_DOCUMENT_KINDS = ["id_front", "id_back", "license_front", "license_back"] as const;
+export const RENTER_DOCUMENT_KINDS = [
+  "id_front",
+  "id_back",
+  "license_front",
+  "license_back",
+] as const;
 export type RenterDocumentKind = (typeof RENTER_DOCUMENT_KINDS)[number];
 export const renterDocumentKindSchema = z.enum(RENTER_DOCUMENT_KINDS);
 

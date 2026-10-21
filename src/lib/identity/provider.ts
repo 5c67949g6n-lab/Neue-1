@@ -32,6 +32,7 @@ const providers: Record<IdentityProviderId, IdentityVerificationProvider> = {
 };
 
 export function getIdentityProvider(id: IdentityProviderId): IdentityVerificationProvider {
-  if (!Object.hasOwn(providers, id)) throw new Error(`Unbekannter Identitätsanbieter: ${String(id)}`);
+  if (!Object.hasOwn(providers, id))
+    throw new Error(`Unbekannter Identitätsanbieter: ${String(id)}`);
   return providers[id];
 }

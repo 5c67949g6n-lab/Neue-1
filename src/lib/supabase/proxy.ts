@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { publicEnv } from "@/lib/env";
-import { isProtectedPath } from "@/lib/auth/paths";
+import { handlesOwnAuth, isProtectedPath } from "@/lib/auth/paths";
 
 /**
  * Erneuert die Supabase-Session bei jeder Anfrage und leitet nicht eingeloggte
@@ -36,7 +36,8 @@ export async function updateSession(request: NextRequest) {
   const { data } = await supabase.auth.getClaims();
   const isLoggedIn = Boolean(data?.claims?.sub);
 
-  if (!isLoggedIn && isProtectedPath(request.nextUrl.pathname)) {
+  const pathname = request.nextUrl.pathname;
+  if (!isLoggedIn && isProtectedPath(pathname) && !handlesOwnAuth(pathname)) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.search = "";

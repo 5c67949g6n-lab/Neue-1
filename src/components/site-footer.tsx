@@ -2,6 +2,7 @@ import Link from "next/link";
 import { brand } from "@/config/brand";
 
 const legalLinks = [
+  { href: "/vermieten", label: "Auto vermieten" },
   { href: "/agb", label: "AGB" },
   { href: "/mietvertrag", label: "Mietvertrag" },
   { href: "/datenschutz", label: "Datenschutz" },
@@ -15,7 +16,7 @@ export function SiteFooter() {
         <p>
           © {brand.name} · Testprojekt · Start in {brand.city}
         </p>
-        <nav aria-label="Rechtliches" className="flex flex-wrap gap-x-4 gap-y-2">
+        <nav aria-label="Weitere Links" className="flex flex-wrap gap-x-4 gap-y-2">
           {legalLinks.map((link) => (
             <Link key={link.href} href={link.href} className="hover:text-foreground">
               {link.label}
