@@ -16,6 +16,7 @@ Architektur, Datenmodell und Buchungsablauf: **[docs/ARCHITEKTUR.md](docs/ARCHIT
 - Mieter-Verifizierung: Ausweis + Führerschein verschlüsselt hochladen, Prüfung im Admin-Panel
 - Admin-Panel: Verifizierungen, Nutzer sperren/Admin-Rechte, Einstellungen, Audit-Log
 - Buchungs-Statusmaschine (reine Logik, vollständig getestet)
+- Tests: 423 Unit- und Datenbank-Tests (u. a. RLS, Doppelbuchung, unveränderbare Fotos), 28 E2E-Tests
 
 ## Lokal starten
 
@@ -30,11 +31,11 @@ npm run seed:users          # Test-Konten anlegen
 npm run dev                 # http://127.0.0.1:3000
 ```
 
-| Dienst | URL |
-| --- | --- |
-| App | http://127.0.0.1:3000 |
+| Dienst                              | URL                    |
+| ----------------------------------- | ---------------------- |
+| App                                 | http://127.0.0.1:3000  |
 | Supabase Studio (Datenbank ansehen) | http://127.0.0.1:54323 |
-| Mailpit (alle E-Mails landen hier) | http://127.0.0.1:54324 |
+| Mailpit (alle E-Mails landen hier)  | http://127.0.0.1:54324 |
 
 Test-Konten (nur lokal, Passwort `Standzeit-Test-2026`):
 

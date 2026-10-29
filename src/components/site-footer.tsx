@@ -16,9 +16,14 @@ export function SiteFooter() {
         <p>
           © {brand.name} · Testprojekt · Start in {brand.city}
         </p>
-        <nav aria-label="Weitere Links" className="flex flex-wrap gap-x-4 gap-y-2">
+        <nav aria-label="Weitere Links" className="-my-1.5 flex flex-wrap gap-x-4">
           {legalLinks.map((link) => (
-            <Link key={link.href} href={link.href} className="hover:text-foreground">
+            <Link
+              key={link.href}
+              href={link.href}
+              // py für ausreichend große Touch-Ziele auf dem Handy
+              className="hover:text-foreground inline-block py-1.5"
+            >
               {link.label}
             </Link>
           ))}

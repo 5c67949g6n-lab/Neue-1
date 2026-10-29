@@ -16,18 +16,18 @@ Unterschiede zu bestehenden Anbietern:
 
 ## 1. Tech-Stack
 
-| Bereich    | Wahl                                                                | Begründung                                                                                               |
-| ---------- | ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| App        | Next.js 16 (App Router, Server Actions), TypeScript strict          | Cache Components bewusst **aus**: fast jede Seite ist nutzerbezogen (Auth + RLS)                         |
-| UI         | Tailwind v4 mit semantischen Design-Tokens, eigene kleine Bausteine | `src/components/ui/*`, mobile first                                                                      |
-| Daten      | Supabase: Postgres, Auth, Storage, Realtime                         | PostGIS (Umkreissuche), btree_gist (Doppelbuchungen per Constraint)                                      |
-| Validierung| zod                                                                 | gleiche Regeln für Client und Server                                                                     |
-| Zahlung    | Stripe Connect Express, „Separate Charges & Transfers“ (Phase 4)    | Abbuchung und Auszahlung zeitlich entkoppelt (Auszahlung nach Abholung, Raten, Kaution)                  |
-| Karte      | Leaflet + OpenStreetMap (Phase 2)                                   |                                                                                                          |
-| KI         | Claude Vision, nur serverseitig (Phase 6)                           | Keys nie im Client                                                                                       |
-| E-Mail/PDF | Resend + React Email, `@react-pdf/renderer` (Phase 4/9)             |                                                                                                          |
-| Jobs       | idempotente Job-Endpunkte + Cron, plus Lazy-Auswertung beim Lesen   | Fristen hängen nie allein am Cron                                                                        |
-| Tests      | Vitest (Domain), Vitest gegen lokale DB (RLS), Playwright (E2E)     |                                                                                                          |
+| Bereich     | Wahl                                                                | Begründung                                                                              |
+| ----------- | ------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| App         | Next.js 16 (App Router, Server Actions), TypeScript strict          | Cache Components bewusst **aus**: fast jede Seite ist nutzerbezogen (Auth + RLS)        |
+| UI          | Tailwind v4 mit semantischen Design-Tokens, eigene kleine Bausteine | `src/components/ui/*`, mobile first                                                     |
+| Daten       | Supabase: Postgres, Auth, Storage, Realtime                         | PostGIS (Umkreissuche), btree_gist (Doppelbuchungen per Constraint)                     |
+| Validierung | zod                                                                 | gleiche Regeln für Client und Server                                                    |
+| Zahlung     | Stripe Connect Express, „Separate Charges & Transfers“ (Phase 4)    | Abbuchung und Auszahlung zeitlich entkoppelt (Auszahlung nach Abholung, Raten, Kaution) |
+| Karte       | Leaflet + OpenStreetMap (Phase 2)                                   |                                                                                         |
+| KI          | Claude Vision, nur serverseitig (Phase 6)                           | Keys nie im Client                                                                      |
+| E-Mail/PDF  | Resend + React Email, `@react-pdf/renderer` (Phase 4/9)             |                                                                                         |
+| Jobs        | idempotente Job-Endpunkte + Cron, plus Lazy-Auswertung beim Lesen   | Fristen hängen nie allein am Cron                                                       |
+| Tests       | Vitest (Domain), Vitest gegen lokale DB (RLS), Playwright (E2E)     |                                                                                         |
 
 **Grundprinzip:** Fachlogik (Preise, Buchungsstatus, Keybox, Raten, Storno, Berechtigung) liegt als reine
 TypeScript-Module in `src/domain/*` – ohne Next.js- oder Supabase-Abhängigkeit, vollständig testbar.
@@ -36,7 +36,7 @@ TypeScript-Module in `src/domain/*` – ohne Next.js- oder Supabase-Abhängigkei
 
 - **Lesen** regelt Row Level Security (RLS) in Postgres – jede Tabelle in `public` hat RLS (per Test abgesichert).
 - **Normale Nutzer schreiben** nur, wo es fachlich harmlos ist (eigenes Profil, eigene Fahrzeuge/Inserat-Entwürfe,
-  Chat). Spalten-Grants begrenzen, *welche* Spalten sie ändern dürfen (z. B. nie `is_admin`, nie `listings.status`).
+  Chat). Spalten-Grants begrenzen, _welche_ Spalten sie ändern dürfen (z. B. nie `is_admin`, nie `listings.status`).
 - **Alles Privilegierte** (Statuswechsel, Admin-Entscheidungen, verschlüsselte Uploads, Geld) läuft serverseitig mit
   dem Secret Key (`createAdminClient()`), und zwar erst **nachdem** der Server die Berechtigung geprüft hat
   (`requireUser()` / `requireAdmin()` aus `src/lib/auth/dal.ts`, Buchungs-Statusmaschine).
@@ -69,20 +69,20 @@ TypeScript-Module in `src/domain/*` – ohne Next.js- oder Supabase-Abhängigkei
 Konventionen: UUIDs, Beträge in **Cent** (integer), Zeiten `timestamptz`, Status als Postgres-Enums.
 Details in `supabase/migrations/`.
 
-| Bereich | Tabellen |
-| --- | --- |
-| Konten | `profiles` (öffentlich), `profile_private` (Kontakt, `is_admin`, `status`), `payout_accounts` |
-| Verifizierung | `verifications` (renter/owner, Status, verschlüsselte Daten), `secure_documents` |
+| Bereich              | Tabellen                                                                                                                                                                                                                        |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Konten               | `profiles` (öffentlich), `profile_private` (Kontakt, `is_admin`, `status`), `payout_accounts`                                                                                                                                   |
+| Verifizierung        | `verifications` (renter/owner, Status, verschlüsselte Daten), `secure_documents`                                                                                                                                                |
 | Fahrzeuge & Inserate | `vehicles`, `vehicle_private` (Kennzeichen), `vehicle_photos`, `listings`, `listing_private_details` (genaue Adresse), `km_packages`, `availability_windows` (Urlaubsmodus), `listing_handover_points`, `cancellation_policies` |
-| Übergabe | `handover_points` (Zuhause/Flughafen/Hbf/P+R/Partner-Parkhaus), `keyboxes`, `key_access_grants` (Codes verschlüsselt, Zeitfenster) |
-| Buchung | `bookings` (Zeitraum als `tstzrange`, Snapshots), `booking_events` (Audit-Trail), `booking_line_items`, `contracts` |
-| Versicherung | `insurance_products` (Platzhalter), `booking_insurances` (Policennummer, Status) |
-| Zahlung | `payment_installments`, `deposits`, `extra_charges`, `transfers`, `receipts`, `stripe_events` |
-| Schadenscheck | `inspections`, `inspection_photos`, `damage_checks`, `damage_findings`, `damage_cases`, `damage_case_photos` |
-| Rückkehr-Service | `service_partners`, `service_orders` (Magic-Link-Token als Hash) |
-| Preis-KI | `local_events` (Event-Kalender), `price_suggestions` (Eingaben, Anpassungen, gewählter Preis → Trainingsdaten) |
-| Kommunikation | `messages`, `reviews` (doppelblind), `notifications`, `flight_watches` |
-| Recht & Admin | `legal_pages`, `platform_settings`, `admin_audit_log` |
+| Übergabe             | `handover_points` (Zuhause/Flughafen/Hbf/P+R/Partner-Parkhaus), `keyboxes`, `key_access_grants` (Codes verschlüsselt, Zeitfenster)                                                                                              |
+| Buchung              | `bookings` (Zeitraum als `tstzrange`, Snapshots), `booking_events` (Audit-Trail), `booking_line_items`, `contracts`                                                                                                             |
+| Versicherung         | `insurance_products` (Platzhalter), `booking_insurances` (Policennummer, Status)                                                                                                                                                |
+| Zahlung              | `payment_installments`, `deposits`, `extra_charges`, `transfers`, `receipts`, `stripe_events`                                                                                                                                   |
+| Schadenscheck        | `inspections`, `inspection_photos`, `damage_checks`, `damage_findings`, `damage_cases`, `damage_case_photos`                                                                                                                    |
+| Rückkehr-Service     | `service_partners`, `service_orders` (Magic-Link-Token als Hash)                                                                                                                                                                |
+| Preis-KI             | `local_events` (Event-Kalender), `price_suggestions` (Eingaben, Anpassungen, gewählter Preis → Trainingsdaten)                                                                                                                  |
+| Kommunikation        | `messages`, `reviews` (doppelblind), `notifications`, `flight_watches`                                                                                                                                                          |
+| Recht & Admin        | `legal_pages`, `platform_settings`, `admin_audit_log`                                                                                                                                                                           |
 
 ## 5. Buchungsablauf
 
@@ -143,13 +143,13 @@ automatische Ausweisprüfung (nur Schnittstelle `src/lib/identity`), Lernmodell 
 
 ## 7. Seitenstruktur
 
-| Bereich | Routen |
-| --- | --- |
+| Bereich    | Routen                                                                                                                      |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------- |
 | Öffentlich | `/`, `/vermieten`, `/suche` (P2), `/autos/[id]` (P2), `/fuer/*` (P10), `/agb`, `/datenschutz`, `/impressum`, `/mietvertrag` |
-| Auth | `/login`, `/registrieren`, `/passwort-vergessen`, `/passwort-neu`, `/auth/confirm` |
-| Konto | `/konto`, `/konto/verifizierung`, `/buchungen/[id]` (P3), `/vermieter` (P2) |
-| Partner | `/partner/auftrag/[token]` (P7) |
-| Admin | `/admin`, `/admin/verifizierungen`, `/admin/nutzer`, `/admin/einstellungen`, `/admin/audit` – weitere ab P2 |
+| Auth       | `/login`, `/registrieren`, `/passwort-vergessen`, `/passwort-neu`, `/auth/confirm`                                          |
+| Konto      | `/konto`, `/konto/verifizierung`, `/buchungen/[id]` (P3), `/vermieter` (P2)                                                 |
+| Partner    | `/partner/auftrag/[token]` (P7)                                                                                             |
+| Admin      | `/admin`, `/admin/verifizierungen`, `/admin/nutzer`, `/admin/einstellungen`, `/admin/audit` – weitere ab P2                 |
 
 ## 8. Phasen
 
@@ -163,3 +163,14 @@ automatische Ausweisprüfung (nur Schnittstelle `src/lib/identity`), Lernmodell 
 8. Preis-KI mit Event-Kalender, Verdienst-Rechner
 9. Chat, Bewertungen, E-Mails, Admin-Panel komplett
 10. Landingpages, Deployment, Seed-Daten, Testanleitung
+
+## 9. Offene Punkte aus Phase 1 (bewusst später)
+
+| Thema                                                                 | Stand                                                                                                                                                    | Wann             |
+| --------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
+| Lösch-Job für abgelaufene Ausweisdokumente und Fotos (`delete_after`) | Fristen werden überall gesetzt, gelöscht wird noch nicht automatisch                                                                                     | Phase 9          |
+| Konto löschen                                                         | Buchungen und Belege verweisen mit `on delete restrict` auf Profile (Belege müssen bleiben) – Konto-Löschung braucht Anonymisierung statt hartem Löschen | Phase 9          |
+| Sperren                                                               | beendet alle Sitzungen (`admin_revoke_user_sessions`); ein bereits ausgestelltes Access-Token bleibt bis zu 1 h gültig, die App sperrt dank DAL sofort   | –                |
+| Rate-Limits                                                           | E-Mail-Versand begrenzt Supabase; Uploads und Server Actions haben noch kein eigenes Limit                                                               | vor dem Livegang |
+| Verifizierung von Besitzern                                           | KYC übernimmt Stripe Connect beim Onboarding, Fahrzeugschein pro Fahrzeug                                                                                | Phase 2/4        |
+| Automatische Ausweisprüfung                                           | Schnittstelle `src/lib/identity` mit Stripe-Identity-Stub                                                                                                | bei Bedarf       |
